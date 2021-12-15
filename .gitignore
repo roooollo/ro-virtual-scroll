@@ -1,0 +1,4 @@
+# Output of 'npm pack'
+
+node_modules
+dist
