@@ -1,9 +1,9 @@
 {
   "name": "ro-virtual-scroll",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "基于 react v16.8+ 的虚拟长列表组件",
   "author": "roollo",
-  "main": "src/index.js",
+  "main": "dist/index.js",
   "scripts": {
     "clean": "del-cli dist",
     "prebuild": "npm run clean",
@@ -13,7 +13,7 @@
     "prettier:write": "prettier --config --write \"src/**/*.{js,jsx,tsx,ts,less,md,json}\"",
     "lint:style": "stylelint \"src/**/*.less\" --syntax less",
     "lint:js": "eslint --cache --ext .js,.jsx,.ts,.tsx ./src",
-    "lint:fix": "yarn lint:js --fix"
+    "lint:fix": "npm run lint:js --fix"
   },
   "repository": {
     "type": "git",
@@ -40,8 +40,17 @@
     "@babel/preset-env": "^7.12.1",
     "@babel/preset-react": "^7.12.1",
     "@babel/plugin-transform-runtime": "^7.12.1",
-    "eslint": "7.15.0",
     "prettier": "2.2.1",
+    "eslint": "7.15.0",
+    "babel-eslint": "^10.1.0",
+    "stylelint": "^13.13.1",
+    "eslint-config-prettier": "^7.0.0",
+    "eslint-plugin-babel": "^5.3.1",
+    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-jsx-a11y": "^6.4.1",
+    "eslint-plugin-react": "^7.21.5",
+    "eslint-plugin-react-hooks": "^4.2.0",
+    "stylelint-config-prettier": "^8.0.2",
     "del": "^6.0.0",
     "del-cli": "^3.0.1"
   },

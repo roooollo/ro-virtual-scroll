@@ -1,4 +1,4 @@
 # Output of 'npm pack'
-
+.eslintcache
 node_modules
 dist
