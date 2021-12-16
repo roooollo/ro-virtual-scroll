@@ -2,8 +2,8 @@ import React, { useState, useMemo, useRef, useLayoutEffect, useEffect, useCallba
 import './style.css';
 
 export default function RoVirtualScroller(props) {
-  // 数据源 默认行高
-  const { listData, estimatedItemSize } = props;
+  // 数据源 默认行高 render_props
+  const { listData, estimatedItemSize, render } = props;
   const [curState, setCurState] = useState({
     positions: listData.map((item, index) => ({
       index,
@@ -15,30 +15,35 @@ export default function RoVirtualScroller(props) {
     screenHeight: 0,
     start: 0,
     end: null,
-    bufferScale: 1, // 视窗顶底缓冲区
+    bufferScale: 1, // 视窗顶底缓冲阈值
   });
   const containerRef = useRef();
-  const itemRef = useRef([]);
   const phantomRef = useRef();
   const listRef = useRef();
 
   const visibleCount = useCallback(() => Math.ceil(curState.screenHeight / estimatedItemSize), [curState.screenHeight]);
+  // 上缓冲
   const aboveCount = useMemo(() => Math.min(curState.start, curState.bufferScale * visibleCount()), [curState.start]);
+  // 下缓冲
   const belowCount = useMemo(
     () => Math.min(listData.length - curState.end, curState.bufferScale * visibleCount()),
     [curState.end],
   );
+  // 呈现数据
   const visibleData = useMemo(
     () => listData.slice(curState.start - aboveCount, curState.end + belowCount),
     [curState.start, curState.end],
   );
 
+  // 上偏移（受缓冲区影响）
   const setStartOffset = () => {
     let startOffset;
     if (curState.start >= 1) {
-      const size =
-        curState.positions[curState.start].top -
-        (curState.positions[curState.start - aboveCount] ? curState.positions[curState.start - aboveCount].top : 0);
+      // 计算缓冲区上边距
+      const aboveTop = curState.positions[curState.start - aboveCount];
+      const aboveArea = aboveTop ? aboveTop.top : 0;
+      const size = curState.positions[curState.start].top - aboveArea;
+      // 减去缓冲区上边距
       startOffset = curState.positions[curState.start - 1].bottom - size;
     } else {
       startOffset = 0;
@@ -68,16 +73,16 @@ export default function RoVirtualScroller(props) {
     return tempIndex;
   };
 
+  // 获取当前节点下标
   const getStartIndex = (scrollTop = 0) => binarySearch(curState.positions, scrollTop);
 
   // 获取列表项的当前尺寸
   const updateItemsSize = () => {
-    const nodes = itemRef.current;
-    nodes.forEach((node) => {
+    const nodes = Array.from(listRef.current.children);
+    nodes.forEach((node, index) => {
       if (!node) return;
       const rect = node.getBoundingClientRect();
       const height = rect.height;
-      const index = +node.id.slice(1);
       // if (!curState.positions[index].onSet) {
       //   curState.positions[index].onSet = true;
       // } else {
@@ -118,7 +123,7 @@ export default function RoVirtualScroller(props) {
   }, []);
 
   useEffect(() => {
-    if (!itemRef.current || !itemRef.current.length) {
+    if (!listRef.current.children.length) {
       return;
     }
     // 获取真实元素大小，修改对应的尺寸缓存
@@ -131,21 +136,12 @@ export default function RoVirtualScroller(props) {
   });
 
   return (
-    <div ref={containerRef} className="infinite-list-container" onScroll={scrollEvent}>
-      <div ref={phantomRef} className="infinite-list-phantom" />
-      <div ref={listRef} className="infinite-list">
-        {visibleData.map((item, index) => (
-          <div
-            ref={(el) => {
-              itemRef.current[index] = el;
-            }}
-            className="infinite-list-item"
-            id={item.id}
-            key={item.id}
-          >
-            {item.value}
-          </div>
-        ))}
+    <div style={props.style} className={props.className}>
+      <div ref={containerRef} className="infinite-list-container" onScroll={scrollEvent}>
+        <div ref={phantomRef} className="infinite-list-phantom" />
+        <div ref={listRef} className="infinite-list">
+          {render(visibleData)}
+        </div>
       </div>
     </div>
   );
