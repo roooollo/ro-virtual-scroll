@@ -10,6 +10,10 @@
   position: absolute;
 }
 
+.infinite-list > * {
+  box-sizing: border-box;
+}
+
 .infinite-list-phantom {
   width: 1px;
   position: absolute;

@@ -10,7 +10,6 @@ export default function RoVirtualScroller(props) {
       height: estimatedItemSize,
       top: index * estimatedItemSize,
       bottom: (index + 1) * estimatedItemSize,
-      // onSet: false, // 已缓存
     })),
     screenHeight: 0,
     start: 0,
@@ -79,27 +78,23 @@ export default function RoVirtualScroller(props) {
   // 获取列表项的当前尺寸
   const updateItemsSize = () => {
     const nodes = Array.from(listRef.current.children);
-    nodes.forEach((node, index) => {
-      if (!node) return;
+    let nodeIndex = curState.start - aboveCount;
+    nodes.forEach((node) => {
+      if (!curState.positions[nodeIndex]) return;
       const rect = node.getBoundingClientRect();
       const height = rect.height;
-      // if (!curState.positions[index].onSet) {
-      //   curState.positions[index].onSet = true;
-      // } else {
-      //   // 缓存后不再检索
-      //   return;
-      // }
-      const oldHeight = curState.positions[index].height;
+      const oldHeight = curState.positions[nodeIndex].height;
       const dValue = oldHeight - height;
       // 存在差值
       if (dValue) {
-        curState.positions[index].bottom = curState.positions[index].bottom - dValue;
-        curState.positions[index].height = height;
-        for (let k = index + 1; k < curState.positions.length; k++) {
+        curState.positions[nodeIndex].bottom = curState.positions[nodeIndex].bottom - dValue;
+        curState.positions[nodeIndex].height = height;
+        for (let k = nodeIndex + 1; k < curState.positions.length; k++) {
           curState.positions[k].top = curState.positions[k - 1].bottom;
           curState.positions[k].bottom = curState.positions[k].bottom - dValue;
         }
       }
+      nodeIndex++;
     });
   };
 
