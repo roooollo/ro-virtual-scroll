@@ -27,7 +27,7 @@ import React from 'react';
 import faker from 'faker';
 import RoVirtualScroller from 'ro-virtual-scroll';
 
-const listData = new Array(200000).fill(null).map((item, index) => ({
+const listData = new Array(500000).fill(null).map((item, index) => ({
   key: `_${index}`,
   value: `${index}_${faker.lorem.sentences()}`,
 }));
@@ -38,7 +38,7 @@ export default function TestVirtual() {
       className="someclass"
       style={{ height: '500px', width: '400px' }}
       listData={listData}
-      estimatedItemSize={40}
+      estimatedItemSize={50}
       render={(visibleData) =>
         visibleData.map((item) => (
           <div key={item.key} style={{ borderBottom: '1px solid black' }}>
