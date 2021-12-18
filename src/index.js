@@ -12,19 +12,21 @@ export default function RoVirtualScroller(props) {
       top: index * estimatedItemSize,
       bottom: (index + 1) * estimatedItemSize,
     })),
-    screenHeight: 0,
     start: 0,
     end: null,
     bufferScale, // 视窗顶底缓冲阈值
     io: null, // 临界点观察者
   });
 
-  const containerRef = useRef();
+  const containerRef = useRef({ clientHeight: 0 });
   const phantomRef = useRef();
   const listRef = useRef();
 
   // 默认可见数量
-  const visibleCount = useCallback(() => Math.ceil(curState.screenHeight / estimatedItemSize), [curState.screenHeight]);
+  const visibleCount = useCallback(
+    () => Math.ceil(containerRef.current.clientHeight / estimatedItemSize),
+    [containerRef.current.clientHeight],
+  );
   // 上缓冲
   const aboveCount = useMemo(() => ~~Math.min(curState.start, curState.bufferScale * visibleCount()), [curState.start]);
   // 下缓冲
@@ -66,18 +68,17 @@ export default function RoVirtualScroller(props) {
         return midIndex + 1;
       } else if (midValue < value) {
         start = midIndex + 1;
+        tempIndex = start
       } else if (midValue > value) {
-        if (tempIndex === null || tempIndex > midIndex) {
-          tempIndex = midIndex;
-        }
-        end -= 1;
+        end =  midIndex - 1;
+        tempIndex = end
       }
     }
     return tempIndex;
   };
 
   // 获取当前节点下标
-  const getStartIndex = (scrollTop = 0) => binarySearch(curState.positions, scrollTop);
+  const getScrollIndex = (scrollTop = 0) => binarySearch(curState.positions, scrollTop);
 
   // 获取列表项的当前尺寸
   const updateItemsSize = () => {
@@ -107,12 +108,12 @@ export default function RoVirtualScroller(props) {
   };
 
   const scrollEvent = () => {
-    // 当前滚动位置
     const scrollTop = containerRef.current.scrollTop;
+    const clientHeight = containerRef.current.clientHeight;
     // 此时的开始索引
-    curState.start = getStartIndex(scrollTop);
+    curState.start = getScrollIndex(scrollTop);
     // 此时的结束索引
-    curState.end = curState.start + visibleCount();
+    curState.end = getScrollIndex(scrollTop + clientHeight);
     // 此时的偏移量
     setStartOffset();
     setCurState({ ...curState });
@@ -124,6 +125,8 @@ export default function RoVirtualScroller(props) {
       // 如果不可见，更新
       if (entries[0] && entries[0].intersectionRatio <= 0) {
         scrollEvent();
+      } else if (entries[1] && entries[1].intersectionRatio <= 0) {
+        scrollEvent();
       }
     });
     return io;
@@ -131,9 +134,7 @@ export default function RoVirtualScroller(props) {
 
   useLayoutEffect(() => {
     // 初始化
-    curState.screenHeight = containerRef.current.clientHeight;
-    curState.start = 0;
-    curState.end = curState.start + visibleCount();
+    scrollEvent();
     curState.io = iObserver();
     setCurState({ ...curState });
     return () => {
@@ -159,11 +160,14 @@ export default function RoVirtualScroller(props) {
     // 获取当前虚拟节点
     const nodes = listRef.current.children;
     // 观察临界点
-    const upperCritical = nodes[aboveCount];
-    upperCritical && curState.io.observe(upperCritical);
+    const upCritical = nodes[aboveCount + 1];
+    const downCritical = nodes[aboveCount + curState.end - curState.start - 1];
+    upCritical && curState.io.observe(upCritical);
+    downCritical && curState.io.observe(downCritical);
     return () => {
       // 清除
-      upperCritical && curState.io.unobserve(upperCritical);
+      upCritical && curState.io.unobserve(upCritical);
+      downCritical && curState.io.unobserve(downCritical);
     };
   });
 

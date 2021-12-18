@@ -1,6 +1,6 @@
 {
   "name": "ro-virtual-scroll",
-  "version": "1.2.0",
+  "version": "1.2.3",
   "description": "Virtual long list component based on react v16.8+ (support variable height)",
   "author": "roollo",
   "main": "dist/index.js",
