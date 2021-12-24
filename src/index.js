@@ -1,5 +1,7 @@
-import React, { useState, useMemo, useRef, useLayoutEffect, useEffect, useCallback } from 'react';
-import './style.css';
+require("intersection-observer");
+
+import React, { useState, useMemo, useRef, useLayoutEffect, useEffect, useCallback } from "react";
+import "./style.css";
 
 export default function RoVirtualScroller(props) {
   // 数据源 默认行高 render_props
@@ -28,7 +30,10 @@ export default function RoVirtualScroller(props) {
     [containerRef.current.clientHeight],
   );
   // 上缓冲
-  const aboveCount = useMemo(() => ~~Math.min(curState.start, curState.bufferScale * visibleCount()), [curState.start]);
+  const aboveCount = useMemo(
+    () => ~~Math.min(curState.start, curState.bufferScale * visibleCount()),
+    [curState.start],
+  );
   // 下缓冲
   const belowCount = useMemo(
     () => ~~Math.min(listData.length - curState.end, curState.bufferScale * visibleCount()),
@@ -68,10 +73,10 @@ export default function RoVirtualScroller(props) {
         return midIndex + 1;
       } else if (midValue < value) {
         start = midIndex + 1;
-        tempIndex = start
+        tempIndex = start;
       } else if (midValue > value) {
-        end =  midIndex - 1;
-        tempIndex = end
+        end = midIndex - 1;
+        tempIndex = end;
       }
     }
     return tempIndex;
@@ -121,7 +126,7 @@ export default function RoVirtualScroller(props) {
 
   const iObserver = () => {
     // 观察临界点
-    const io = new IntersectionObserver((entries) => {
+    const io = new IntersectionObserver(entries => {
       // 如果不可见，更新
       if (entries[0] && entries[0].intersectionRatio <= 0) {
         scrollEvent();

@@ -1,13 +1,13 @@
 .infinite-list-container {
-  height: 100%;
   position: relative;
+  height: 100%;
   overflow: auto;
 }
 
 .infinite-list {
+  position: absolute;
   top: 0;
   will-change: transform;
-  position: absolute;
 }
 
 .infinite-list > * {
@@ -15,6 +15,6 @@
 }
 
 .infinite-list-phantom {
-  width: 1px;
   position: absolute;
+  width: 1px;
 }
